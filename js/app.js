@@ -436,6 +436,7 @@
     if (img.dataset.blob) { URL.revokeObjectURL(img.src); delete img.dataset.blob; }
     if (url) { img.src = url; el("photoPrev").hidden = false; el("photoBtns").hidden = true; }
     else { img.removeAttribute("src"); el("photoPrev").hidden = true; el("photoBtns").hidden = false; }
+    el("dropHintText").textContent = url ? "drag & drop a new image to replace it" : "or drag & drop an image here";
     el("photoInput").value = ""; el("camInput").value = "";
   }
   function updateCalc() {
@@ -444,7 +445,42 @@
     var m = el("calcMargin"); m.textContent = inr(pr - c) + (pr && c && pr < c ? " (loss)" : ""); m.classList.toggle("neg", pr - c < 0);
   }
   function handlePhoto(e) {
-    var f = e.target.files && e.target.files[0]; if (!f) return;
+    var f = e.target.files && e.target.files[0]; if (f) usePhotoFile(f);
+  }
+  function firstImage(list) {
+    for (var i = 0; list && i < list.length; i++) if (/^image\//.test(list[i].type)) return list[i];
+    return null;
+  }
+  function hasFiles(e) { return e.dataTransfer && Array.prototype.indexOf.call(e.dataTransfer.types || [], "Files") >= 0; }
+  // Drag & drop anywhere on the open panel, or paste an image from the clipboard.
+  function wirePhotoDrop() {
+    var sheet = el("sheet"), zone = el("photoDrop"), depth = 0;
+    function setDrag(on) { zone.classList.toggle("drag", on); sheet.classList.toggle("drag-any", on); }
+    sheet.addEventListener("dragenter", function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault(); depth++;
+      el("dropOverlayText").textContent = el("photoPrev").hidden ? "Drop image to add it" : "Drop image to replace the photo";
+      setDrag(true);
+    });
+    sheet.addEventListener("dragover", function (e) { if (hasFiles(e)) { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; } });
+    sheet.addEventListener("dragleave", function (e) { if (!hasFiles(e)) return; depth = Math.max(0, depth - 1); if (!depth) setDrag(false); });
+    sheet.addEventListener("drop", function (e) {
+      if (!hasFiles(e)) return;
+      e.preventDefault(); depth = 0; setDrag(false);
+      var f = firstImage(e.dataTransfer.files);
+      if (f) usePhotoFile(f); else toast("That isn't an image — drop a JPG, PNG or WebP file");
+    });
+    // stop the browser from opening a file dropped just outside the panel
+    window.addEventListener("dragover", function (e) { if (hasFiles(e) && sheet.classList.contains("open")) e.preventDefault(); });
+    window.addEventListener("drop", function (e) { if (hasFiles(e)) e.preventDefault(); });
+    document.addEventListener("paste", function (e) {
+      if (!sheet.classList.contains("open") || !e.clipboardData) return;
+      var f = firstImage(e.clipboardData.files);
+      if (!f) return; // plain text paste into a field stays untouched
+      e.preventDefault(); usePhotoFile(f); toast("Photo pasted");
+    });
+  }
+  function usePhotoFile(f) {
     if (!/^image\//.test(f.type)) { toast("Please choose an image file"); return; }
     var job = compressImage(f, 1000, 0.82);
     pendingPhoto = { job: job };
@@ -804,7 +840,7 @@
     }
   }
 
-  initTheme(); wireEvents(); wireAuth(); if (store.mode === "cloud") wireAuthHelp();
+  initTheme(); wireEvents(); wirePhotoDrop(); wireAuth(); if (store.mode === "cloud") wireAuthHelp();
   el("localNoticeClose").addEventListener("click", function () { el("localNotice").hidden = true; try { localStorage.setItem("sr-local-notice", "1"); } catch (e) {} el("main").focus(); });
 
   var fromRecoveryLink = /type=recovery/.test(location.hash + location.search);
