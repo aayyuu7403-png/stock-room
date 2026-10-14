@@ -115,7 +115,7 @@
   }
 
   /* ================= Cloud (Supabase) ================= */
-  var SUPABASE_SRC = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js";
+  var SUPABASE_SRC = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.116.0/dist/umd/supabase.js";
   var BUCKET = "photos";
   var FIELD_MAP = {
     name: "name", sku: "sku", category: "category", quantity: "quantity", cost: "cost",
