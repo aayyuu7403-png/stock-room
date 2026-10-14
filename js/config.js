@@ -9,8 +9,8 @@
  * protected by the row-level security rules in supabase/schema.sql.
  */
 window.STOCKROOM_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: "",
+  supabaseUrl: "https://qcptwgmsmfcrvxmqkowv.supabase.co",
+  supabaseAnonKey: "sb_publishable_HCUKXa5dPc342crg4E-7yA_ZSZzq06u",
 
   // Allow "Create account" on the sign-in screen. Set to false once you have
   // made your own account (and also disable sign-ups in Supabase).

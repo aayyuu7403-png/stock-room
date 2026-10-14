@@ -1,6 +1,6 @@
 /* Offline support: app files are served network-first and fall back to the
  * cache when offline. Bump VERSION when you change the list below. */
-var VERSION = "stockroom-v2";
+var VERSION = "stockroom-v3";
 var SHELL = [
   "./", "index.html", "css/styles.css", "js/config.js", "js/store.js", "js/app.js",
   "manifest.webmanifest", "icons/icon.svg", "icons/icon-192.png", "icons/icon-512.png"
