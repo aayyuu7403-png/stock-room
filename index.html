@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Stock Room</title>
+<meta name="description" content="Stock Room — simple inventory tracker for your products, stock levels and value.">
+<meta name="theme-color" content="#f3f1ec" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#161513" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Stock Room">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="css/styles.css">
+<script>try{var t=localStorage.getItem("sr-theme");if(t)document.documentElement.setAttribute("data-theme",t)}catch(e){}</script>
+</head>
+<body>
+
+<!-- Reusable icons -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="i-logo" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l1-5h16l1 5"/><path d="M4 9v10a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1V9"/><path d="M9 13h6"/></g></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-alert" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></g></symbol>
+  <symbol id="i-x-circle" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></g></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-device" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></g></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a4.5 4.5 0 1 0-1.4-8.8A6 6 0 0 0 4.5 12 3.5 3.5 0 0 0 6 19z"/><path d="M9 14l2 2 4-4"/></g></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.7"><path d="M21 15l-5-5L5 21"/><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/></g></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></g></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></g></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7L12 3 4 7v10l8 4 8-4z"/><path d="M4 7l8 4 8-4M12 11v10"/></g></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<!-- ============ sign-in (cloud mode only) ============ -->
+<main class="auth" id="authView" hidden>
+  <div class="auth-card">
+    <div class="brand">
+      <div class="mark"><svg aria-hidden="true"><use href="#i-logo"/></svg></div>
+      <div><h1>Stock Room</h1><p>Inventory tracker</p></div>
+    </div>
+    <h2 id="authTitle">Sign in</h2>
+    <p class="sub" id="authSub">Your inventory syncs across all your devices.</p>
+    <form id="authForm" novalidate aria-labelledby="authTitle">
+      <div id="authErr" class="err-msg" role="alert" hidden></div>
+      <div id="authOk" class="ok-msg" role="status" hidden></div>
+      <div class="field"><label for="aEmail">Email</label><input id="aEmail" type="email" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" required></div>
+      <div class="field"><label for="aPass">Password</label>
+        <div class="pw-wrap"><input id="aPass" type="password" autocomplete="current-password" minlength="6" required aria-describedby="aPassHint"><button type="button" id="pwToggle" aria-controls="aPass" aria-pressed="false">Show</button></div>
+        <div class="hint" id="aPassHint">At least 6 characters.</div></div>
+      <button class="btn btn-primary" id="authSubmit" type="submit">Sign in</button>
+    </form>
+    <div class="auth-switch" id="authSwitch"><span id="authSwitchText">New here?</span> <button type="button" id="authToggle">Create account</button></div>
+  </div>
+</main>
+
+<!-- ============ app ============ -->
+<div id="appView" hidden>
+<a class="skip" href="#main">Skip to inventory</a>
+<header class="topbar" id="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <div class="mark"><svg aria-hidden="true"><use href="#i-logo"/></svg></div>
+      <div><h1>Stock Room</h1><p>Inventory tracker</p></div>
+    </div>
+    <span class="badge" id="modeBadge"><svg aria-hidden="true"><use href="#i-device"/></svg><span id="modeText"></span></span>
+    <button class="btn icon-only-sm" id="importBtn" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5M12 15V3"/></svg><span class="lbl">Import</span><span class="sr-only">Import from Excel or backup</span></button>
+    <div class="menu-wrap">
+      <button class="btn icon-only-sm" id="exportBtn" type="button" aria-expanded="false" aria-controls="exportMenu"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 8l5-5 5 5M12 3v12"/></svg><span class="lbl">Export</span><span class="sr-only">Export options</span></button>
+      <div class="menu" id="exportMenu" hidden>
+        <button type="button" data-export="xlsx">Excel sheet (.xlsx)<small>For viewing and sharing</small></button>
+        <button type="button" data-export="json">Full backup (.json)<small>Everything incl. photos — restore via Import</small></button>
+      </div>
+    </div>
+    <input id="importFile" type="file" accept=".xlsx,.xls,.csv,.json" hidden>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Switch to dark theme"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+    <button class="icon-btn" id="signOutBtn" type="button" aria-label="Sign out" title="Sign out" hidden><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></svg></button>
+    <button class="btn btn-primary" id="addBtn" type="button"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Add product</button>
+  </div>
+</header>
+
+<main class="wrap" id="main" tabindex="-1">
+  <div class="notice" id="localNotice" role="note" hidden>
+    <svg aria-hidden="true"><use href="#i-device"/></svg>
+    <div><strong>Saved on this device only.</strong> Your data lives in this browser. Take a <em>Full backup</em> from Export now and then, or turn on cloud sync (see README) to use it on phone and laptop.</div>
+    <button type="button" class="icon-btn" id="localNoticeClose" aria-label="Dismiss notice"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
+  </div>
+
+  <section aria-labelledby="hOverview">
+    <h2 class="section-label" id="hOverview">Overview</h2>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section aria-labelledby="hCats">
+    <h2 class="section-label" id="hCats">Stock by category</h2>
+    <div class="panel cat-card">
+      <h3>Units &amp; value per category</h3>
+      <p class="cat-sub">Bar length shows units in stock. Value at cost price is on the right.</p>
+      <ul class="bars" id="bars"></ul>
+    </div>
+  </section>
+
+  <section aria-labelledby="hProducts">
+    <h2 class="section-label" id="hProducts">Products <span class="sr-only" id="resultCount"></span></h2>
+    <div class="toolrow">
+      <div class="search" role="search">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <label for="search" class="sr-only">Search products</label>
+        <input id="search" type="search" placeholder="Search name, SKU or category" autocomplete="off" enterkeyhint="search">
+      </div>
+      <label class="sort-sel" for="sortSel">Sort
+        <select id="sortSel">
+          <option value="name:asc">Name A–Z</option>
+          <option value="status:asc">Needs attention first</option>
+          <option value="quantity:asc">Quantity: low to high</option>
+          <option value="quantity:desc">Quantity: high to low</option>
+          <option value="value:desc">Stock value: high to low</option>
+          <option value="price:desc">Selling price: high to low</option>
+          <option value="category:asc">Category A–Z</option>
+        </select>
+      </label>
+      <div class="chips" id="catChips" role="group" aria-label="Filter products"></div>
+    </div>
+    <div class="table-wrap" id="tableWrap" aria-live="polite" aria-busy="true"></div>
+  </section>
+</main>
+
+<!-- slide-over -->
+<div class="scrim" id="scrim"></div>
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet-head"><h2 id="sheetTitle">Add product</h2>
+    <button class="icon-btn" id="sheetClose" type="button" aria-label="Close"><svg aria-hidden="true"><use href="#i-close"/></svg></button></div>
+  <form class="sheet-body" id="productForm" novalidate>
+    <div id="formErr" class="err-msg" role="alert" hidden></div>
+    <div class="field" role="group" aria-labelledby="photoLabel">
+      <span class="field-label" id="photoLabel">Product photo <span class="opt">(optional)</span></span>
+      <div class="photo-row" id="photoPrev" hidden>
+        <div class="photo-prev"><img id="photoImg" alt="Selected product photo" width="104" height="104"></div>
+        <button type="button" class="btn" id="photoRemove"><svg aria-hidden="true"><use href="#i-trash"/></svg>Remove photo</button>
+      </div>
+      <div id="photoBtns" class="photo-btns">
+        <button type="button" class="btn photo-b" id="camBtn"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>Take photo</button>
+        <button type="button" class="btn photo-b" id="uploadBtn"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5M12 3v12"/></svg>Choose file</button>
+      </div>
+      <input id="photoInput" type="file" accept="image/*" hidden>
+      <input id="camInput" type="file" accept="image/*" capture="environment" hidden>
+    </div>
+    <div class="field"><label for="fName">Product name <span class="opt">(required)</span></label><input id="fName" type="text" maxlength="120" placeholder="e.g. Gold wheat clutcher" required autocomplete="off"></div>
+    <div class="field"><label for="fSku">SKU / code <span class="opt">(optional)</span></label><input id="fSku" type="text" maxlength="60" class="mono" placeholder="e.g. WHEAT-CLUTCH-G" autocomplete="off" autocapitalize="characters" spellcheck="false" aria-describedby="fSkuHint"><div class="hint" id="fSkuHint">Your own code. Leave blank to make one from the name.</div></div>
+    <div class="field"><label for="fCat">Category</label><input id="fCat" type="text" maxlength="60" list="catList" placeholder="e.g. metal clip" autocomplete="off"><datalist id="catList"></datalist></div>
+    <div class="grid2">
+      <div class="field"><label for="fQty">Quantity</label><input id="fQty" type="number" inputmode="numeric" min="0" step="1" placeholder="0"></div>
+      <div class="field"><label for="fLow">Low-stock alert at</label><input id="fLow" type="number" inputmode="numeric" min="0" step="1" placeholder="5" aria-describedby="fLowHint"><div class="hint" id="fLowHint">Marked “Low” at or below this.</div></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label for="fCost">Cost price (₹)</label><input id="fCost" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+      <div class="field"><label for="fPrice">Selling price (₹)</label><input id="fPrice" type="number" inputmode="decimal" min="0" step="any" placeholder="0"></div>
+    </div>
+    <div class="field"><label for="fNotes">Notes <span class="opt">(optional)</span></label><textarea id="fNotes" maxlength="1000"></textarea></div>
+    <dl class="calc" aria-live="polite">
+      <div class="calc-line"><dt>Stock value</dt><dd id="calcStock">₹0</dd></div>
+      <div class="calc-line"><dt>Potential sales</dt><dd id="calcSales">₹0</dd></div>
+      <div class="calc-line"><dt>Margin per unit</dt><dd id="calcMargin">₹0</dd></div>
+    </dl>
+    <button type="submit" hidden tabindex="-1">Save</button>
+  </form>
+  <div class="sheet-foot">
+    <button class="btn" id="sheetCancel" type="button">Cancel</button>
+    <button class="btn btn-primary" id="sheetSave" type="button" style="flex:1.4">Save product</button>
+  </div>
+</div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><span id="toastMsg"></span><button type="button" id="toastAction" hidden></button></div>
+
+<script src="js/config.js"></script>
+<script src="js/store.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
