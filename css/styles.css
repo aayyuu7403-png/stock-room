@@ -279,6 +279,68 @@ tbody tr:hover{background:var(--surface-2)}
 .auth-switch{margin-top:16px;text-align:center;font-size:14px;color:var(--fg-muted)}
 .auth-switch button{border:none;background:none;color:var(--accent);font-weight:700;padding:10px 4px;text-decoration:underline;text-underline-offset:3px}
 
+/* ---------- view all (list page) ---------- */
+.all-only{display:none !important}
+body.view-all .all-only{display:revert !important}
+body.view-all .all-only.sr-only{display:inline !important}
+body.view-all .dash-only{display:none !important}
+body.view-all .sort-sel{display:flex}
+.prod-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.view-all-link{display:inline-flex;align-items:center;gap:6px;min-height:var(--tap);margin:16px 2px 4px;font-size:14px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px;border-radius:8px}
+.view-all-link svg{width:15px;height:15px;transition:transform .15s var(--ease-out)}
+.view-all-link:hover svg{transform:translateX(3px)}
+body.view-all .all-head{display:flex !important;align-items:center;gap:16px;margin:24px 2px 18px}
+.all-head .btn{text-decoration:none}
+.all-title{font-size:clamp(22px,3vw,28px);font-weight:700;line-height:1.15}
+.all-sub{margin:2px 0 0;font-size:14px;color:var(--fg-muted)}
+body.view-all .prod-head .section-label{margin-top:0}
+
+.plist{display:flex;flex-direction:column;gap:14px;list-style:none;margin:0;padding:0}
+.pitem{display:grid;grid-template-columns:clamp(180px,30%,320px) minmax(0,1fr);background:var(--surface);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);overflow:hidden;position:relative}
+.pitem-media{position:relative;aspect-ratio:1/1;background:var(--surface-3);border:none;padding:0;margin:0;display:block;width:100%;cursor:zoom-in;border-right:1px solid var(--border)}
+.pitem-media img{width:100%;height:100%;object-fit:cover;display:block}
+.pitem-media.ph{display:grid;place-items:center;color:var(--fg-faint);cursor:default}
+.pitem-media.ph svg{width:44px;height:44px}
+.pitem-media .ph-txt{display:block;font-size:13px;font-weight:600;margin-top:6px}
+.pitem-media .zoom{position:absolute;right:10px;bottom:10px;width:34px;height:34px;border-radius:10px;background:var(--overlay-btn);color:var(--overlay-fg);display:grid;place-items:center;opacity:.9}
+.pitem-media .zoom svg{width:17px;height:17px}
+.pitem-media:focus-visible{outline-offset:-3px;border-radius:0}
+.pitem-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.pitem-top{display:flex;align-items:flex-start;gap:12px}
+.pitem-title{flex:1;min-width:0}
+.pitem-title h3{font-size:clamp(18px,2vw,22px);font-weight:700;line-height:1.2;overflow-wrap:anywhere}
+.pitem-title .prod-sku{max-width:none;font-size:13px;margin-top:4px}
+.pitem-tags{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.pitem-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:0}
+.pitem-stats > div{background:var(--surface-2);padding:10px 12px;min-width:0}
+.pitem-stats dt{font-size:12px;font-weight:600;color:var(--fg-muted)}
+.pitem-stats dd{margin:2px 0 0;font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.pitem-stats dd.neg{color:var(--crit)}
+.pitem-foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 16px;margin-top:auto}
+.pitem-foot .qty-wrap{display:flex;align-items:center;gap:10px;font-size:13px;font-weight:600;color:var(--fg-muted)}
+.pitem-notes{font-size:14px;color:var(--fg-muted);margin:0;white-space:pre-line;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pitem-notes strong{color:var(--fg);font-weight:600}
+.pitem-updated{font-size:12.5px;color:var(--fg-muted);margin-left:auto}
+.pitem .row-actions{margin:-6px -8px 0 0}
+.pitem .row-actions button{width:var(--tap);height:var(--tap)}
+
+.lightbox{border:none;padding:0;background:transparent;max-width:min(92vw,1000px);max-height:92vh;overflow:visible}
+.lightbox::backdrop{background:rgba(10,8,4,.82)}
+.lightbox[open]{display:flex;flex-direction:column;align-items:center;animation:pop .18s var(--ease-out)}
+.lightbox img{max-width:min(92vw,1000px);max-height:80vh;object-fit:contain;border-radius:14px;background:var(--surface-3)}
+.lb-cap{color:#f0ede6;font-weight:600;margin:12px 0 0;text-align:center}
+.lb-close{position:absolute;top:-14px;right:-14px;z-index:1;border-radius:999px;box-shadow:var(--shadow-lg)}
+
+@media (max-width:640px){
+  .pitem{grid-template-columns:1fr}
+  .pitem-stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .pitem-media{aspect-ratio:4/3;border-right:none;border-bottom:1px solid var(--border)}
+  .pitem-body{padding:14px 14px 16px}
+  .all-head{gap:12px}
+  .pitem-updated{margin-left:0;width:100%}
+  .lb-close{top:8px;right:8px}
+}
+
 /* ---------- responsive ---------- */
 @media (max-width:980px){
   .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -316,15 +378,15 @@ tbody tr:hover{background:var(--surface-2)}
   tbody tr{display:grid;grid-template-columns:auto minmax(0,1fr) auto;grid-template-areas:"prod prod act" "cat stat sell" "qty qty val";gap:12px 10px;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:12px 12px 12px 14px;box-shadow:var(--shadow)}
   tbody tr:hover{background:var(--surface)}
   tbody td{padding:0;border:none;font-size:14.5px}
-  .c-prod{grid-area:prod;min-width:0}
-  .c-actions{grid-area:act;align-self:start}
-  .c-cat{grid-area:cat}
-  .c-status{grid-area:stat}
-  .c-sell{grid-area:sell}
-  .c-qty{grid-area:qty;text-align:left}
-  .c-val{grid-area:val}
-  .c-label{display:block;font-size:12px;font-weight:600;color:var(--fg-muted);line-height:1.2}
-  .c-qty .c-label{display:none}
+  td.c-prod{grid-area:prod;min-width:0}
+  td.c-actions{grid-area:act;align-self:start}
+  td.c-cat{grid-area:cat}
+  td.c-status{grid-area:stat}
+  td.c-sell{grid-area:sell}
+  td.c-qty{grid-area:qty;text-align:left}
+  td.c-val{grid-area:val}
+  td .c-label{display:block;font-size:12px;font-weight:600;color:var(--fg-muted);line-height:1.2}
+  td.c-qty .c-label{display:none}
   .row-actions{gap:2px;margin:-4px -4px 0 0}
   .row-actions button{width:var(--tap);height:var(--tap)}
   .qty-edit button{width:var(--tap);height:var(--tap)}

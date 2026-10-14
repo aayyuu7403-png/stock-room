@@ -95,12 +95,12 @@
     <button type="button" class="icon-btn" id="localNoticeClose" aria-label="Dismiss notice"><svg aria-hidden="true"><use href="#i-close"/></svg></button>
   </div>
 
-  <section aria-labelledby="hOverview">
+  <section aria-labelledby="hOverview" class="dash-only">
     <h2 class="section-label" id="hOverview">Overview</h2>
     <div class="kpis" id="kpis"></div>
   </section>
 
-  <section aria-labelledby="hCats">
+  <section aria-labelledby="hCats" class="dash-only">
     <h2 class="section-label" id="hCats">Stock by category</h2>
     <div class="panel cat-card">
       <h3>Units &amp; value per category</h3>
@@ -110,7 +110,14 @@
   </section>
 
   <section aria-labelledby="hProducts">
-    <h2 class="section-label" id="hProducts">Products <span class="sr-only" id="resultCount"></span></h2>
+    <div class="all-head all-only">
+      <a href="#" class="btn" id="backBtn"><svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>Dashboard</a>
+      <div><h2 class="all-title" id="allTitle">All products</h2><p class="all-sub" id="allSub"></p></div>
+    </div>
+    <div class="prod-head">
+      <h2 class="section-label" id="hProducts"><span class="dash-only">Products</span><span class="all-only sr-only">Product list</span> <span class="sr-only" id="resultCount"></span></h2>
+      <a href="#/all" class="view-all-link dash-only" id="viewAllLink">View all as list<svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+    </div>
     <div class="toolrow">
       <div class="search" role="search">
         <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
@@ -183,6 +190,12 @@
   </div>
 </div>
 </div>
+
+<dialog class="lightbox" id="lightbox" aria-label="Product photo">
+  <form method="dialog"><button class="icon-btn lb-close" aria-label="Close photo"><svg aria-hidden="true"><use href="#i-close"/></svg></button></form>
+  <img id="lightboxImg" alt="">
+  <p class="lb-cap" id="lightboxCap"></p>
+</dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"><span id="toastMsg"></span><button type="button" id="toastAction" hidden></button></div>
 

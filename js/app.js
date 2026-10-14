@@ -160,6 +160,7 @@
       wrap.innerHTML = '<div class="state"><h3>No matches</h3><p>Nothing matches your search or filter.</p><button type="button" class="btn" data-action="clear">Clear search and filters</button></div>';
       return;
     }
+    if (isAllView()) { renderList(wrap, rows); return; }
     var head = '<thead><tr>' + SORTABLE.map(function (c) {
       var active = ui.sortKey === c[0];
       var aria = active ? ' aria-sort="' + (ui.sortDir === "asc" ? "ascending" : "descending") + '"' : "";
@@ -185,7 +186,62 @@
     wrap.innerHTML = '<table><caption class="sr-only">Products. Column headers are sort buttons.</caption>' + head + '<tbody>' + body + '</tbody></table>';
     hydratePhotos(wrap);
   }
-  function setCount(t) { el("resultCount").textContent = t ? "— " + t : ""; }
+  /* ---------- "View all" list page ---------- */
+  function isAllView() { return location.hash === "#/all"; }
+  function fmtDate(ms) {
+    if (!ms) return "";
+    try { return new Date(ms).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }); } catch (e) { return ""; }
+  }
+  function renderList(wrap, rows) {
+    var html = rows.map(function (p) {
+      var q = Number(p.quantity) || 0, cost = Number(p.cost) || 0, price = Number(p.price) || 0, st = statusOf(p);
+      var name = p.name || "Untitled", en = esc(name), id = esc(p.id), margin = price - cost;
+      var media;
+      if (p.imageId) {
+        var cached = store.cachedPhotoUrl(p.imageId);
+        media = '<button type="button" class="pitem-media" data-zoom="' + id + '" aria-label="View larger photo of ' + en + '"><img alt="" loading="lazy" decoding="async" ' + (cached ? 'src="' + esc(cached) + '"' : 'data-photo="' + esc(p.imageId) + '"') + '><span class="zoom" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8v6M8 11h6"/></svg></span></button>';
+      } else {
+        media = '<div class="pitem-media ph"><div style="text-align:center">' + icon("img") + '<span class="ph-txt">No photo</span></div></div>';
+      }
+      function stat(label, val, cls) { return '<div><dt>' + label + '</dt><dd' + (cls ? ' class="' + cls + '"' : '') + '>' + val + '</dd></div>'; }
+      return '<li class="pitem" data-row="' + id + '">' + media +
+        '<div class="pitem-body">' +
+          '<div class="pitem-top"><div class="pitem-title"><h3>' + en + '</h3><div class="prod-sku mono">' + esc(p.sku || "") + '</div></div>' +
+          '<div class="row-actions"><button type="button" class="ed" data-id="' + id + '" aria-label="Edit ' + en + '" title="Edit">' + icon("edit") + '</button><button type="button" class="del" data-id="' + id + '" aria-label="Delete ' + en + '" title="Delete">' + icon("trash") + '</button></div></div>' +
+          '<div class="pitem-tags"><span class="cat-tag">' + esc(p.category || "—") + '</span><span class="c-status">' + statusHtml(st) + '</span></div>' +
+          '<dl class="pitem-stats">' +
+            stat("Cost price", inr(cost)) + stat("Selling price", inr(price)) +
+            stat("Margin / unit", inr(margin), margin < 0 ? "neg" : "") +
+            '<div class="c-val"><dt>Stock value</dt><dd class="v">' + inr(q * cost) + '</dd></div>' +
+            '<div class="c-sales"><dt>Potential sales</dt><dd class="v">' + inr(q * price) + '</dd></div>' +
+            stat("Low-stock alert at", (p.low == null ? LOW_DEFAULT : p.low).toLocaleString("en-IN")) +
+          '</dl>' +
+          (p.notes ? '<p class="pitem-notes"><strong>Notes: </strong>' + esc(p.notes) + '</p>' : '') +
+          '<div class="pitem-foot"><div class="qty-wrap"><span>Quantity</span><div class="qty-edit" data-id="' + id + '" role="group" aria-label="Quantity for ' + en + '"><button type="button" class="qd" aria-label="Decrease">−</button><input class="qi num" type="text" inputmode="numeric" pattern="[0-9]*" value="' + q + '" aria-label="Quantity"><button type="button" class="qu" aria-label="Increase">+</button></div></div>' +
+          (p.updatedAt ? '<span class="pitem-updated">Updated ' + fmtDate(p.updatedAt) + '</span>' : '') + '</div>' +
+        '</div></li>';
+    }).join("");
+    wrap.innerHTML = '<ul class="plist" aria-label="Products">' + html + '</ul>';
+    hydratePhotos(wrap);
+  }
+  function applyView(scrollTop) {
+    var all = isAllView();
+    document.body.classList.toggle("view-all", all);
+    document.title = all ? "All products · Stock Room" : "Stock Room";
+    if (all && ui.sortKey === "name" && !el("sortSel").dataset.touched) syncSortSelect();
+    render();
+    if (scrollTop) window.scrollTo(0, 0);
+  }
+  function openLightbox(id) {
+    var p = byId(id); if (!p || !p.imageId) return;
+    var box = el("lightbox"), img = el("lightboxImg");
+    img.alt = p.name || "Product photo"; el("lightboxCap").textContent = p.name || "";
+    img.removeAttribute("src");
+    store.photoUrl(p.imageId).then(function (url) { if (url) img.src = url; });
+    if (box.showModal) box.showModal(); else box.setAttribute("open", "");
+  }
+
+  function setCount(t) { el("resultCount").textContent = t ? "— " + t : ""; el("allSub").textContent = t || ""; }
 
   function hydratePhotos(root) {
     root.querySelectorAll("img[data-photo]").forEach(function (img) {
@@ -224,7 +280,7 @@
   function wireEvents() {
     var searchT;
     el("search").addEventListener("input", function (e) { ui.q = e.target.value; clearTimeout(searchT); searchT = setTimeout(renderTable, 120); });
-    el("sortSel").addEventListener("change", function (e) { var v = e.target.value.split(":"); ui.sortKey = v[0]; ui.sortDir = v[1]; renderTable(); });
+    el("sortSel").addEventListener("change", function (e) { e.target.dataset.touched = "1"; var v = e.target.value.split(":"); ui.sortKey = v[0]; ui.sortDir = v[1]; renderTable(); });
     el("catChips").addEventListener("click", function (e) {
       var b = e.target.closest(".chip"); if (!b) return;
       if (b.hasAttribute("data-attn")) ui.attn = !ui.attn;
@@ -257,6 +313,7 @@
         else if (a === "clear") { ui.q = ""; ui.cat = "all"; ui.attn = false; el("search").value = ""; render(); el("search").focus(); }
         return;
       }
+      var zm = e.target.closest("[data-zoom]"); if (zm) { openLightbox(zm.getAttribute("data-zoom")); return; }
       var ed = e.target.closest(".ed"); if (ed) { openSheet(ed.getAttribute("data-id")); return; }
       var del = e.target.closest(".del"); if (del) { doDelete(del.getAttribute("data-id")); return; }
       var qd = e.target.closest(".qd"); if (qd) { stepQty(qd.closest(".qty-edit").getAttribute("data-id"), -1); return; }
@@ -323,6 +380,8 @@
       var t = e.target.tagName; if (t === "INPUT" || t === "TEXTAREA" || t === "SELECT" || el("sheet").classList.contains("open")) return;
       e.preventDefault(); el("search").focus();
     });
+    window.addEventListener("hashchange", function () { applyView(true); var t = isAllView() ? el("allTitle") : el("viewAllLink"); if (t) { t.setAttribute("tabindex", "-1"); t.focus({ preventScroll: true }); } });
+    el("lightbox").addEventListener("click", function (e) { if (e.target === el("lightbox")) el("lightbox").close(); });
     window.addEventListener("pagehide", flushAll);
     window.addEventListener("beforeunload", function (e) {
       if (Object.keys(qtyTimers).length || Object.keys(pendingDeletes).length) { flushAll(); e.preventDefault(); e.returnValue = ""; }
@@ -343,10 +402,11 @@
     p.quantity = v; p.updatedAt = Date.now();
     renderKpis(); renderBars();
     if (before !== statusOf(p)) renderChips();
-    var row = document.querySelector('tr[data-row="' + cssEsc(id) + '"]');
+    var row = document.querySelector('[data-row="' + cssEsc(id) + '"]');
     if (row) {
       var qi = row.querySelector(".qi"); if (document.activeElement !== qi || qi.value !== String(v)) qi.value = v;
       row.querySelector(".c-val .v").textContent = inr(v * (Number(p.cost) || 0));
+      var sales = row.querySelector(".c-sales .v"); if (sales) sales.textContent = inr(v * (Number(p.price) || 0));
       row.querySelector(".c-status").innerHTML = statusHtml(statusOf(p));
     }
     clearTimeout(qtyTimers[id]);
@@ -364,11 +424,11 @@
   function doDelete(id) {
     var p = byId(id); if (!p) return;
     clearTimeout(qtyTimers[id]); delete qtyTimers[id];
-    var row = document.querySelector('tr[data-row="' + cssEsc(id) + '"]');
+    var row = document.querySelector('[data-row="' + cssEsc(id) + '"]');
     var next = row && (row.nextElementSibling || row.previousElementSibling);
     var nextId = next && next.getAttribute("data-row");
     products = products.filter(function (x) { return x.id !== id; }); render();
-    var focusTarget = nextId && document.querySelector('tr[data-row="' + cssEsc(nextId) + '"] .del');
+    var focusTarget = nextId && document.querySelector('[data-row="' + cssEsc(nextId) + '"] .del');
     (focusTarget || el("search")).focus();
     pendingDeletes[id] = { product: p, timer: setTimeout(function () { commitDelete(id); }, UNDO_MS) };
     toast("Deleted “" + (p.name || "product") + "”", "Undo", function () {
@@ -563,7 +623,7 @@
       var i = products.indexOf(existing);
       if (i >= 0) products[i] = data; else products.push(data);
       render(); closeSheet();
-      var row = document.querySelector('tr[data-row="' + cssEsc(data.id) + '"]');
+      var row = document.querySelector('[data-row="' + cssEsc(data.id) + '"]');
       if (row) { row.scrollIntoView({ block: "nearest" }); if (!wasEdit) row.querySelector(".ed").focus(); }
       toast(photoWarn ? "Saved, but the photo could not be uploaded" : (wasEdit ? "Changes saved" : "“" + data.name + "” added"));
     }).catch(function (err) {
@@ -832,6 +892,8 @@
       el("localNotice").hidden = dismissed;
     }
     syncSortSelect();
+    document.body.classList.toggle("view-all", isAllView());
+    document.title = isAllView() ? "All products · Stock Room" : "Stock Room";
     loaded = false; render(); refresh();
     if (!started) {
       started = true;
