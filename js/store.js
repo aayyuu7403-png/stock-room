@@ -173,7 +173,8 @@
         });
       },
       onAuth: function (cb) {
-        sb.auth.onAuthStateChange(function (_evt, session) {
+        sb.auth.onAuthStateChange(function (evt, session) {
+          if (evt === "PASSWORD_RECOVERY" && cb.recovery) cb.recovery();
           var next = (session && session.user) || null;
           if ((next && next.id) === (user && user.id)) return;
           user = next;
@@ -188,6 +189,15 @@
       signUp: function (email, password) {
         return sb.auth.signUp({ email: email, password: password, options: { emailRedirectTo: location.href.split("#")[0] } })
           .then(check).then(function (d) { if (d.session) user = d.user; return d; });
+      },
+      resendConfirm: function (email) {
+        return sb.auth.resend({ type: "signup", email: email, options: { emailRedirectTo: location.href.split("#")[0] } }).then(check);
+      },
+      resetPassword: function (email) {
+        return sb.auth.resetPasswordForEmail(email, { redirectTo: location.href.split("#")[0] }).then(check);
+      },
+      updatePassword: function (password) {
+        return sb.auth.updateUser({ password: password }).then(check);
       },
       signOut: function () {
         if (channel) { sb.removeChannel(channel); channel = null; }

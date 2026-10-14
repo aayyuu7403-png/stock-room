@@ -54,6 +54,10 @@
         <div class="pw-wrap"><input id="aPass" type="password" autocomplete="current-password" minlength="6" required aria-describedby="aPassHint"><button type="button" id="pwToggle" aria-controls="aPass" aria-pressed="false">Show</button></div>
         <div class="hint" id="aPassHint">At least 6 characters.</div></div>
       <button class="btn btn-primary" id="authSubmit" type="submit">Sign in</button>
+      <div class="auth-help" id="authHelp" hidden>
+        <button type="button" class="btn" id="resendBtn">Resend confirmation email</button>
+      </div>
+      <div class="auth-switch"><button type="button" id="forgotBtn">Forgot password?</button></div>
     </form>
     <div class="auth-switch" id="authSwitch"><span id="authSwitchText">New here?</span> <button type="button" id="authToggle">Create account</button></div>
   </div>

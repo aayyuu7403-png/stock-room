@@ -264,6 +264,8 @@ tbody tr:hover{background:var(--surface-2)}
 .pw-wrap{position:relative}
 .pw-wrap input{padding-right:74px}
 .pw-wrap button{position:absolute;right:4px;top:50%;transform:translateY(-50%);min-height:36px;padding:0 10px;border:none;background:transparent;color:var(--accent);font-weight:700;font-size:13.5px;border-radius:8px}
+.auth-help{margin-top:10px}
+.auth-help .btn{width:100%}
 .auth-switch{margin-top:16px;text-align:center;font-size:14px;color:var(--fg-muted)}
 .auth-switch button{border:none;background:none;color:var(--accent);font-weight:700;padding:10px 4px;text-decoration:underline;text-underline-offset:3px}
 

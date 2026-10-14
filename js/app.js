@@ -699,7 +699,7 @@
     el("authSwitchText").textContent = signup ? "Already have an account?" : "New here?";
     el("authToggle").textContent = signup ? "Sign in" : "Create account";
     el("aPass").setAttribute("autocomplete", signup ? "new-password" : "current-password");
-    el("authErr").hidden = true; el("authOk").hidden = true;
+    el("authErr").hidden = true; el("authOk").hidden = true; el("authHelp").hidden = true;
   }
   function wireAuth() {
     el("authToggle").addEventListener("click", function () { setAuthMode(!signupMode); el("aEmail").focus(); });
@@ -723,7 +723,7 @@
           el("authOk").hidden = false;
         }
         // Signed in: store.onAuth() switches to the app.
-      }).catch(function (err) { authErr((err && err.message) || "Could not sign in."); })
+      }).catch(function (err) { authFail(err, email); })
         .then(function () { btn.disabled = false; btn.textContent = signupMode ? "Create account" : "Sign in"; });
     });
     el("signOutBtn").addEventListener("click", function () {
@@ -732,6 +732,52 @@
     });
   }
   function authErr(m) { var e = el("authErr"); e.textContent = m; e.hidden = false; }
+  function authOk(m) { var e = el("authOk"); e.textContent = m; e.hidden = false; }
+  // Turn Supabase's terse auth errors into instructions the user can act on.
+  function authFail(err, email) {
+    var code = (err && (err.code || "")) + " " + ((err && err.message) || "");
+    if (/email_not_confirmed|not confirmed/i.test(code)) {
+      authErr("Your email is not confirmed yet. Open the confirmation email from Supabase (check Spam too) and tap the link, then sign in. Didn't get it? Resend it below.");
+      el("authHelp").hidden = false;
+    } else if (/invalid_credentials|invalid login/i.test(code)) {
+      authErr("Email or password is incorrect. Check for typos, or use “Forgot password?” to set a new one.");
+    } else if (/signup.*disabled|signups not allowed/i.test(code)) {
+      authErr("New accounts are turned off for this app. Sign in with your existing account.");
+    } else if (/rate limit|too many/i.test(code)) {
+      authErr("Too many attempts. Wait a minute and try again.");
+    } else if (!navigator.onLine || /fetch|network/i.test(code)) {
+      authErr("Can't reach the server. Check your internet connection and try again.");
+    } else {
+      authErr((err && err.message) || "Could not sign in. Please try again.");
+    }
+  }
+  function wireAuthHelp() {
+    el("resendBtn").addEventListener("click", function () {
+      var email = el("aEmail").value.trim(), b = this;
+      if (!/^\S+@\S+\.\S+$/.test(email)) { el("aEmail").focus(); return authErr("Enter your email address above first."); }
+      b.disabled = true; b.textContent = "Sending…";
+      store.resendConfirm(email).then(function () {
+        el("authErr").hidden = true; authOk("Confirmation email sent to " + email + ". Open it, tap the link, then come back and sign in.");
+      }).catch(function (err) { authFail(err, email); })
+        .then(function () { b.disabled = false; b.textContent = "Resend confirmation email"; });
+    });
+    el("forgotBtn").addEventListener("click", function () {
+      var email = el("aEmail").value.trim();
+      el("authErr").hidden = true; el("authOk").hidden = true;
+      if (!/^\S+@\S+\.\S+$/.test(email)) { el("aEmail").focus(); return authErr("Type your email address above, then tap “Forgot password?” again."); }
+      store.resetPassword(email).then(function () {
+        authOk("Password reset link sent to " + email + ". Open it on this device to choose a new password.");
+      }).catch(function (err) { authFail(err, email); });
+    });
+  }
+  // Arriving from a password-reset email: ask for the new password right away.
+  function askNewPassword() {
+    var pw = prompt("Choose a new password (at least 6 characters):");
+    if (!pw) return;
+    if (pw.length < 6) { alert("Password must be at least 6 characters."); return askNewPassword(); }
+    store.updatePassword(pw).then(function () { toast("Password updated"); })
+      .catch(function (err) { alert("Could not update password: " + ((err && err.message) || "please try again")); });
+  }
 
   /* ---------- boot ---------- */
   var started = false;
@@ -758,12 +804,16 @@
     }
   }
 
-  initTheme(); wireEvents(); wireAuth();
+  initTheme(); wireEvents(); wireAuth(); if (store.mode === "cloud") wireAuthHelp();
   el("localNoticeClose").addEventListener("click", function () { el("localNotice").hidden = true; try { localStorage.setItem("sr-local-notice", "1"); } catch (e) {} el("main").focus(); });
 
+  var fromRecoveryLink = /type=recovery/.test(location.hash + location.search);
   store.init().then(function (r) {
+    if (fromRecoveryLink && r.user) setTimeout(askNewPassword, 400);
     if (store.mode === "cloud") {
-      store.onAuth(function (u) { if (u) startApp(u); else showAuth(); });
+      var onAuth = function (u) { if (u) startApp(u); else showAuth(); };
+      onAuth.recovery = function () { if (!fromRecoveryLink) setTimeout(askNewPassword, 300); };
+      store.onAuth(onAuth);
       if (r.user) startApp(r.user); else showAuth();
     } else startApp(null);
   }).catch(function (err) {

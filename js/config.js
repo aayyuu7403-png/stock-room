@@ -14,7 +14,7 @@ window.STOCKROOM_CONFIG = {
 
   // Allow "Create account" on the sign-in screen. Set to false once you have
   // made your own account (and also disable sign-ups in Supabase).
-  allowSignup: true,
+  allowSignup: false,
 
   // Default low-stock threshold for new products.
   lowStockDefault: 5
